@@ -1,8 +1,6 @@
 const express = require("express"); 
-const uniqid = require("uniqid");
 const {logware, auth} = require("./mw");
-const {saveToFile, getAllData} = require("./db");
-
+const {guitars} = require("./controllers")
 const app = express();
 
 app.listen(3456,err=>{
@@ -23,77 +21,45 @@ app.use(express.json())
 
 let user = "admin";
 
-app.get("/guitars", logware, index);
+//#region guitars
+app.get("/guitars", logware, guitars.index);
 
-app.post("/guitars", create)
-app.get("/guitars/:id",logware, auth(user), show);
-app.delete("/guitars/:id", destroy);
-app.put("/guitars/:id", update);
+app.post("/guitars", guitars.create)
+app.get("/guitars/:id",logware, auth(user), guitars.show);
+app.delete("/guitars/:id", guitars.destroy);
+app.put("/guitars/:id", guitars.update);
 
-function update(req,res){
-    let guitars = getAllData();
+//#endregion
 
-    let guitar = guitars.find(g=>g.id == req.params.id);
 
-    if(!guitar) return res.status(400).json({error: "not present"});
-    
-    let {title} = req.body;
-    
-    if(!guitar) return res.status(400).json({error: "bad data"});
-    
-    
-    guitar.title = title;
 
-    saveToFile(guitars);
+//AUTH routes
 
-    res.status(200).json(guitar); 
+
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const uniqid = require("uniqid");
+
+app.post("/login", login);
+
+async function login(req,res){
+
+    let email = req.body.email;
+
+    //One time password
+    let code = uniqid();
+    console.log(code);
+
+    let hash = bcrypt.hash(code ,12);
+
+    let token = await jwt.sign({email, hash}, process.env.secret, {expiresIn:60});
+    res.json(token);
+
 
 }
 
-function index(req,res){
-    let guitars = getAllData();
-    res.json(guitars);
-}
 
-function create(req,res){
+// app.post("/verify", verify);
 
-    let guitars = getAllData();
 
-    let {title} = req.body;
-    if(!title ) return res.status(400).json({error: "bad data"});
-    let id = uniqid();
-    
-    let g = {title, id};
-    guitars.push(g);
 
-    guitars = [g,...guitars];
-
-    saveToFile(guitars);
-
-    res.status(200).json(g);
-}
-
-function show(req,res){
-    let guitars = getAllData();
-    let id = req.params.id;
-
-    let guitar = guitars.find(g=>g.id==id);
-
-    if(guitar) return res.status(200).json(guitar);
-    return res.status(204).end("bruh");
-}
-function destroy(req,res){
-    
-    let guitars = getAllData();
-
-    let id = req.params.id;
-
-    let filtered = guitars.filter((g)=>g.id!=id);
-    if(filtered.length <= guitars.length){
-        guitars = [...filtered];
-        saveToFile(guitars);
-        return res.status(200).json({success:true, deleted: id});
-    }
-    
-    res.status(200).json({TypeError: "Nothing deleted"})
-}

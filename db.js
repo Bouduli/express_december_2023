@@ -1,15 +1,26 @@
-const fs = require("fs")
+const fs = require("fs");
+const { resolve } = require("path");
 
 module.exports = {saveToFile, getAllData};
 
-function saveToFile(data,fileName = "guitars.json"){
+async function saveToFile(data,fileName = "guitrs.json"){
 
-    fs.writeFileSync(fileName, JSON.stringify(data, null, 2));
+    // fs.writeFileSync(fileName, JSON.stringify(data, null, 2));
 
+    fs.writeFile(fileName, JSON.stringify(data,null,2), function(err){
+        if(err) console.log(err);
+    })
 
 }
 
 function getAllData(fileName="guitars.json"){
 
-    return JSON.parse(fs.readFileSync(fileName));
+    return new Promise(function(resolve, reject){
+        fs.readFile(fileName, function(err, data){
+            if(err) return reject(err);
+            
+            resolve(JSON.parse(data));
+        })
+
+    })
 }
