@@ -1,0 +1,11 @@
+Läxa till onsdag 10/1-24
+
+vi vill skicka mail från server till användaren för JWT + Passwordless
+
+Nummer 1 - vi vill INTE använda en vanlig epost
+Nummer 2 - Vi ska använda oss av gmail för att skicka
+
+riktiga steg: 
+Nummer 3 - skapa en ny gmail. 
+Nummer 4 - Sätt på tvåstegsverifiering
+Nummer 5 - Fixa ett Applösenord för google-kontot. under Säkerhet
