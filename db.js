@@ -3,7 +3,7 @@ const { resolve } = require("path");
 
 module.exports = {saveToFile, getAllData};
 
-async function saveToFile(data,fileName = "guitrs.json"){
+async function saveToFile(data,fileName = "guitars.json"){
 
     // fs.writeFileSync(fileName, JSON.stringify(data, null, 2));
 

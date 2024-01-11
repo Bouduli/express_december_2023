@@ -46,7 +46,6 @@ async function create(req,res){
         let id = uniqid();
     
         let g = {title, id};
-        guitars.push(g);
 
         guitars = [g,...guitars];
 
@@ -82,7 +81,7 @@ async function destroy(req,res){
         guitars = [...filtered];
         if(filtered.length <= guitars.length){
             saveToFile(guitars);
-            return res.status(200).json({success:true, deleted: id});
+            return res.status(200).json({success:true, message: "deleted", id});
         }
         return res.status(200).json({error:"nothing deleted"});
     
