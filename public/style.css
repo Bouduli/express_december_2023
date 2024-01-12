@@ -1,0 +1,31 @@
+*{
+    box-sizing: border-box;
+    font-family:system-ui;
+    text-decoration:none;
+}
+
+header{
+    min-height: 10vh;
+    padding:3%;
+    border-bottom: 1px solid #909090;
+}
+
+nav{
+
+    padding:3%;
+    border:1px solid #909090;
+    display: flex;
+    gap:2rem;
+}
+
+.formContainer{
+    width:60%;
+    margin:auto;
+    padding:2%;
+}
+
+input{
+    width:100%;
+    padding:1%;
+    font-size:1.3rem;
+}

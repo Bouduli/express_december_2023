@@ -37,8 +37,9 @@ async function index(req,res){
 }
 
 async function create(req,res){
-
+    const IS_CLIENT = req.body.client ?? false;
     try {
+        
         let guitars = await getAllData();
 
         let {title} = req.body;
@@ -46,11 +47,12 @@ async function create(req,res){
         let id = uniqid();
     
         let g = {title, id};
-
+        
         guitars = [g,...guitars];
 
         saveToFile(guitars);
-
+        if(IS_CLIENT) return res.redirect("/");
+        
         res.status(200).json(g);
     } catch (error) {
         res.status(500).json(error);
@@ -71,6 +73,7 @@ async function show(req,res){
     }
 }
 async function destroy(req,res){
+    const IS_CLIENT = req.body.client ?? false;
     
     try {
         let guitars = await getAllData();
@@ -83,6 +86,8 @@ async function destroy(req,res){
             saveToFile(guitars);
             return res.status(200).json({success:true, message: "deleted", id});
         }
+        if(IS_CLIENT) return res.redirect("/");
+
         return res.status(200).json({error:"nothing deleted"});
     
     } catch (error) {

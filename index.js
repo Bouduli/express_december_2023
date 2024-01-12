@@ -20,8 +20,10 @@ app.use(express.json())
 let user = "admin";
 
 //#region guitars
+app.get("/create", logware, (req,res)=>{
+    res.render("createGuitar.pug", {title: "Create Guitar"})
+})
 app.get("/guitars", logware, guitars.index);
-
 app.post("/guitars", guitars.create)
 app.get("/guitars/:id",logware,  guitars.show);
 app.delete("/guitars/:id", auth(user), guitars.destroy);
@@ -44,6 +46,7 @@ app.post("/verify", cookieParser(), verify);
 async function login(req,res){
     
     let email = req.body.email;
+    const IS_CLIENT = req.body.client ?? false;
     
     if(!email) return res.status(401).json(
         {TypeError: "Invalid credentials", message: "Please provide an email", success:false}
@@ -62,18 +65,24 @@ async function login(req,res){
     //skicka kod till användare via send
     send(email,code);
     
+
+    console.log("@Login - is client:", IS_CLIENT);
+
     res.cookie("token",token,{
         httpOnly: true,
         maxAge: 60000,
         
     })
-    res.json(token);
+    if(IS_CLIENT) return res.redirect("/verify");
+
+    return res.json(token);
     
     
 }
 async function verify(req,res){
     let {code} = req.body;
     let {token} = req.cookies;
+    const IS_CLIENT = req.body.client ?? false;
     
     
     //verify the token
@@ -95,10 +104,15 @@ async function verify(req,res){
                 expiresIn: "3h",
                 
             });
+
+            console.log("@Verify - is client:", IS_CLIENT);
             
-            return res.cookie("auth_token", authToken, {
+            res.cookie("auth_token", authToken, {
                 httpOnly: true
-            }).json({
+            });
+            if(IS_CLIENT) return res.redirect("/");
+            
+            return res.json({
                 authToken,
                 success: true
             });
@@ -111,6 +125,7 @@ async function verify(req,res){
     } catch (error) {
         console.log("it do be erroring");
         console.log(error);
+
         return res.status(401).json(error);
     }
     
@@ -121,6 +136,7 @@ async function verify(req,res){
     // res.json({code, token});
     
 }
+
 //#endregion
 
 
@@ -143,6 +159,12 @@ app.get("/", async (req,res)=>{
     res.render("guitars", {title: "My Guitars", guitars});
 });
 
+app.get("/verify", async (req,res)=>{
+    res.render("verify", {title: "verify"});
+})
+app.get("/login", async (req,res)=>{
+    res.render("login", {title: "login"});
+})
 
 // async function testPug(req,res){
 //     //bad solution to the probleml.
