@@ -1,9 +1,10 @@
 const express = require("express"); 
-const {logware, auth} = require("./mw");
+const {logware, auth,isUser, isMine} = require("./mw");
 const send = require("./email");
 const {guitars} = require("./controllers");
 const cookieParser = require("cookie-parser");
 
+require('dotenv').config()
 const app = express();
 
 
@@ -12,21 +13,28 @@ app.listen(3456,err=>{
     console.log("listening on: "+3456);
 });
 
-app.use(express.urlencoded({extended:true}))
-app.use(express.static("public"))
-app.use(express.json())
+//Finding req.body
+app.use(express.urlencoded({extended:true}));
+
+//processing cookies for all routes
+app.use( cookieParser());
+
+
+app.use(express.static("public"));
+app.use(express.json());
 
 
 let user = "admin";
 
 //#region guitars
-app.get("/create", logware, (req,res)=>{
+app.get("/create", logware, auth, (req,res)=>{
     res.render("createGuitar.pug", {title: "Create Guitar"})
-})
-app.get("/guitars", logware, guitars.index);
-app.post("/guitars", guitars.create)
+});
+
+app.get("/guitars", guitars.index);
+app.post("/guitars", auth, guitars.create)
 app.get("/guitars/:id",logware,  guitars.show);
-app.delete("/guitars/:id", auth(user), guitars.destroy);
+app.delete("/guitars/:id", auth, isMine, guitars.destroy);
 app.put("/guitars/:id", guitars.update);
 
 //#endregion
@@ -41,7 +49,7 @@ const jwt = require("jsonwebtoken");
 const uniqid = require("uniqid");
 
 app.post("/login", login);
-app.post("/verify", cookieParser(), verify);
+app.post("/verify", verify);
 
 async function login(req,res){
     
@@ -60,11 +68,11 @@ async function login(req,res){
     let hash = await bcrypt.hash(code ,12);
     
     //uses environment variables created in windows
-    let token = await jwt.sign({email, hash}, process.env.NODE_SECRET, {expiresIn:120});
+    let token = await jwt.sign({email, hash}, process.env.NODE_OTP_TOKEN_SECRET, {expiresIn:120});
     
     //skicka kod till användare via send
     send(email,code);
-    
+    console.log(code);
 
     console.log("@Login - is client:", IS_CLIENT);
 
@@ -85,32 +93,33 @@ async function verify(req,res){
     const IS_CLIENT = req.body.client ?? false;
     
     
-    //verify the token
+    //verify the otp-token
     
     try {
-        let checkedToken = await jwt.verify(token,process.env.NODE_SECRET);
+        let OTP_Token = await jwt.verify(token,process.env.NODE_OTP_TOKEN_SECRET);
         
-        let hash = checkedToken.hash; 
+        let hash = OTP_Token.hash; 
         
         let checkpw = await bcrypt.compare(code, hash);
         
         if(checkpw){
             let payload = {
-                email: checkedToken.email,
+                email: OTP_Token.email,
                 role:"pwl_user"
             };
             
-            let authToken = await jwt.sign(payload, process.env.NODE_PASSWORDLESS_TOKEN, {
+            //Long term authentication token. 
+            let authToken = await jwt.sign(payload, process.env.NODE_LONG_TERM_TOKEN_SECRET, {
                 expiresIn: "3h",
                 
             });
 
             console.log("@Verify - is client:", IS_CLIENT);
             
-            res.cookie("auth_token", authToken, {
+            res.cookie("auth-token", authToken, {
                 httpOnly: true
             });
-            if(IS_CLIENT) return res.redirect("/");
+            if(IS_CLIENT) return res.redirect("/?logged in");
             
             return res.json({
                 authToken,
@@ -153,10 +162,11 @@ app.get("/test", (req,res)=>{
     let cars = ["bmw", "tesla", "mercedes"];
     res.render("test", {title: "cars" ,cars});
 });
-app.get("/", async (req,res)=>{
+app.get("/", isUser, async (req,res)=>{
     let guitars = await getAllData();
-    
-    res.render("guitars", {title: "My Guitars", guitars});
+    let user = req.user
+    console.log("@index: user is ", user);
+    res.render("guitars", {title: "My Guitars", guitars, user});
 });
 
 app.get("/verify", async (req,res)=>{

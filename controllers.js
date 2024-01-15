@@ -45,8 +45,7 @@ async function create(req,res){
         let {title} = req.body;
         if(!title ) return res.status(400).json({error: "bad data"});
         let id = uniqid();
-    
-        let g = {title, id};
+        let g = {title, id, user: req.user};
         
         guitars = [g,...guitars];
 
@@ -91,6 +90,7 @@ async function destroy(req,res){
         return res.status(200).json({error:"nothing deleted"});
     
     } catch (error) {
-        res.status(500).json(error);
+        console.log(error);
+        return res.status(500).json(error);
     }
 }
