@@ -38,14 +38,18 @@ async function index(req,res){
 
 async function create(req,res){
     const IS_CLIENT = req.body.client ?? false;
+
+    
+
     try {
-        
+        let files = req.files ? handleFiles(req.files.myFiles) : false;
+
         let guitars = await getAllData();
 
         let {title} = req.body;
         if(!title ) return res.status(400).json({error: "bad data"});
         let id = uniqid();
-        let g = {title, id, user: req.user};
+        let g = {title, id, user: req.user, files};
         
         guitars = [g,...guitars];
 
@@ -93,4 +97,18 @@ async function destroy(req,res){
         console.log(error);
         return res.status(500).json(error);
     }
+}
+
+function handleFiles(files, folder="uploads"){
+    
+
+    if(!files.length) files = [files];
+    console.log("files @ handleFiles() : ", files);
+
+    return files.map(f=>{
+        let ext = f.name.split(".").pop();
+        let name = uniqid() + "." + ext;
+        f.mv( folder+"/"+ name);
+        return name;
+    });
 }

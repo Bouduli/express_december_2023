@@ -1,38 +1,70 @@
-const express = require("express"); 
-const {logware, auth,isUser, isMine} = require("./mw");
-const send = require("./email");
-const {guitars} = require("./controllers");
+const express = require("express");
+const fu = require("express-fileupload");
 const cookieParser = require("cookie-parser");
+const bcrypt = require("bcryptjs");
+const uniqid = require("uniqid");
+const fs = require("fs");
 
-require('dotenv').config()
+//used for creating, signing and verifying jwts - acheiving stateless login. 
+const jwt = require("jsonwebtoken");
+
+//shorthand configuration for environment variables;
+require('dotenv').config();
+
+//used for templating
+require("pug")
+
+//self writtem modules
+
+const {getAllData} = require("./db");
+const send = require("./email");
+//controller functions for guitar related stuff
+const {guitars} = require("./controllers");
+
+//self written middlewares
+const {logware, auth,isUser, isMine} = require("./mw");
+const fileMw = require("./mwFileUpload");
+
+
+//setup
 const app = express();
-
-
-app.listen(3456,err=>{
+const PORT = 3456;
+app.listen(PORT,err=>{
     if(err)onsole.log(err);
-    console.log("listening on: "+3456);
+    console.log(`Server starting @ http://localhost:${PORT}`);
 });
+//sets the template engine
+app.set("view engine", "pug");
 
-//Finding req.body
-app.use(express.urlencoded({extended:true}));
+
+//Global MWs
+//Public folder for static resources
+app.use(express.static("public"));
+app.use(express.static("uploads"));
 
 //processing cookies for all routes
-app.use( cookieParser());
+app.use(cookieParser());
 
+//used to determine, on all routes; wether or not a user is logged in.
+app.use(isUser);
 
-app.use(express.static("public"));
+//parse incoming data 
+app.use(express.urlencoded({extended:true}));
 app.use(express.json());
+app.use(fu());
 
 
-let user = "admin";
+
+
 
 //#region guitars
 app.get("/create", logware, auth, (req,res)=>{
-    res.render("createGuitar.pug", {title: "Create Guitar"})
+    let user = req.user;
+    res.render("createGuitar.pug", {title: "Create Guitar", user})
 });
 
 app.get("/guitars", guitars.index);
-app.post("/guitars", auth, guitars.create)
+app.post("/guitars", auth, /* fileMw.fileSize ,*/ guitars.create)
 app.get("/guitars/:id",logware,  guitars.show);
 app.delete("/guitars/:id", auth, isMine, guitars.destroy);
 app.put("/guitars/:id", guitars.update);
@@ -40,16 +72,33 @@ app.put("/guitars/:id", guitars.update);
 //#endregion
 
 
+//#region File-Upload 16/1
 
-//#region AUTH routes
+app.get("/fu", (req,res)=>{
+    let user = req.user;
+    res.render("fu", {title: "File Upload", user});
+});
+app.post("/fu", /*fileMw.fileCount, fileMw.fileSize, fileMw.fileType ,*/ (req,res)=>{
+    console.log("@ POST/fu. Files: ", req.files);
+    
+    req.files.myFiles.forEach(f=>{
+        let name = uniqid();
+
+        let ext = f.name.split(".").pop();
+        // console.log("ext", ext);
+
+        f.mv(`uploads/${name}.${ext}`);
+    })
+    res.send("file uploaded");
+});
 
 
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const uniqid = require("uniqid");
+//#endregion
 
+//#region Authorization
 app.post("/login", login);
 app.post("/verify", verify);
+app.get("/logout", logout);
 
 async function login(req,res){
     
@@ -59,11 +108,11 @@ async function login(req,res){
     if(!email) return res.status(401).json(
         {TypeError: "Invalid credentials", message: "Please provide an email", success:false}
         );
-        //One time password
-        let code = uniqid();
-        
-        //simulates OTP being sent with a email. 
-        console.log(code);
+    //One time password
+    let code = uniqid();
+    
+    //simulates OTP being sent with a email. 
+    console.log(code);
         
     let hash = await bcrypt.hash(code ,12);
     
@@ -71,10 +120,12 @@ async function login(req,res){
     let token = await jwt.sign({email, hash}, process.env.NODE_OTP_TOKEN_SECRET, {expiresIn:120});
     
     //skicka kod till användare via send
-    send(email,code);
-    console.log(code);
 
-    console.log("@Login - is client:", IS_CLIENT);
+
+    //OBS OBS OBS OBS - KOMMENTERA TILLBAKA
+    send(email,code);
+
+    // console.log("@Login - is client:", IS_CLIENT);
 
     res.cookie("token",token,{
         httpOnly: true,
@@ -91,15 +142,19 @@ async function verify(req,res){
     let {code} = req.body;
     let {token} = req.cookies;
     const IS_CLIENT = req.body.client ?? false;
+
+    // if token is verified -> check pw
     
+    //if pw is ok -> new auth-token with long expiry date, used for future requests. 
     
-    //verify the otp-token
     
     try {
+        //verify the otp-token
         let OTP_Token = await jwt.verify(token,process.env.NODE_OTP_TOKEN_SECRET);
         
         let hash = OTP_Token.hash; 
         
+        //checking pw
         let checkpw = await bcrypt.compare(code, hash);
         
         if(checkpw){
@@ -108,13 +163,13 @@ async function verify(req,res){
                 role:"pwl_user"
             };
             
-            //Long term authentication token. 
+            //Long term authentication token, is stored in a cookie. 
             let authToken = await jwt.sign(payload, process.env.NODE_LONG_TERM_TOKEN_SECRET, {
                 expiresIn: "3h",
                 
             });
 
-            console.log("@Verify - is client:", IS_CLIENT);
+            // console.log("@Verify - is client:", IS_CLIENT);
             
             res.cookie("auth-token", authToken, {
                 httpOnly: true
@@ -138,24 +193,23 @@ async function verify(req,res){
         return res.status(401).json(error);
     }
     
-    // if token is verified -> check pw
     
-    //if pw is ok -> new auth-token with long expiry date, used for future requests. 
     
-    // res.json({code, token});
-    
+}
+
+async function logout(req,res){
+    req.user = false;
+    res.clearCookie("auth-token");
+    return res.redirect("./?logged_out");
 }
 
 //#endregion
 
 
 
-const fs = require("fs");
 
 //templating
-require("pug")
-app.set("view engine", "pug");
-const {getAllData} = require("./db");
+
 
 app.get("/test", (req,res)=>{
 
@@ -165,7 +219,7 @@ app.get("/test", (req,res)=>{
 app.get("/", isUser, async (req,res)=>{
     let guitars = await getAllData();
     let user = req.user
-    console.log("@index: user is ", user);
+    // console.log("@index: user is ", user);
     res.render("guitars", {title: "My Guitars", guitars, user});
 });
 

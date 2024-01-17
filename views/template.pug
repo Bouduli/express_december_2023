@@ -17,8 +17,13 @@ html
             h1 Guitar Page
             nav
                 a(href="/") HOME
-                a(href="/login") LOGIN
-                a(href="/create") CREATE GUITAR 
+                if user
+                    a(href="/logout") LOGOUT
+                    a(href="/create") CREATE GUITAR
+                    a(href="/fu")  FILE UPLOAD 
+                else
+                    a(href="/login") LOGIN
+                    
 
             
         main 
