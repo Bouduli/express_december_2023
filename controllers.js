@@ -1,4 +1,4 @@
-const {saveToFile, getAllData} = require("./db");
+const {saveToFile, getAllData, removeAllData, dirExists} = require("./db");
 const uniqid = require("uniqid");
 
 module.exports={guitars:{update, index, show, create, destroy}};
@@ -53,7 +53,7 @@ async function create(req,res){
         
         guitars = [g,...guitars];
 
-        saveToFile(guitars);
+        await saveToFile(guitars);
         if(IS_CLIENT) return res.redirect("/");
         
         res.status(200).json(g);
@@ -80,13 +80,22 @@ async function destroy(req,res){
     
     try {
         let guitars = await getAllData();
-
         let id = req.params.id;
-        
+
+        //for removal of images
+        let guitarToRemove = guitars.find(g=>g.id==id);
+
+        console.log("guitar to remove: ", guitarToRemove);
         let filtered = guitars.filter((g)=>g.id!=id);
         guitars = [...filtered];
         if(filtered.length <= guitars.length){
             saveToFile(guitars);
+            if(guitarToRemove.files.length){
+                guitarToRemove.files.forEach(async(f)=>{
+                    await removeAllData(f);
+                });
+                
+            }
             return res.status(200).json({success:true, message: "deleted", id});
         }
         if(IS_CLIENT) return res.redirect("/");
@@ -99,12 +108,13 @@ async function destroy(req,res){
     }
 }
 
-function handleFiles(files, folder="uploads"){
+async function handleFiles(files, folder="uploads"){
     
 
     if(!files.length) files = [files];
     console.log("files @ handleFiles() : ", files);
-
+    await dirExists();
+    
     return files.map(f=>{
         let ext = f.name.split(".").pop();
         let name = uniqid() + "." + ext;

@@ -1,5 +1,45 @@
 [
   {
+    "title": "test",
+    "id": "xc297clrja8zbj",
+    "user": {
+      "email": "oliverisaksson@proton.me",
+      "role": "pwl_user"
+    },
+    "files": {}
+  },
+  {
+    "title": "testing folder creation",
+    "id": "xc29dpolrja7704",
+    "user": {
+      "email": "oliverisaksson@proton.me",
+      "role": "pwl_user"
+    },
+    "files": {}
+  },
+  {
+    "title": "dsagfdshf",
+    "id": "98mq3arglrhrxtu3",
+    "user": {
+      "email": "oliverbertil2@gmail.com",
+      "role": "pwl_user"
+    },
+    "files": [
+      "98mq3arglrhrxtu0.MOV"
+    ]
+  },
+  {
+    "title": "hej på dig",
+    "id": "98mq3guwlrhp8b8e",
+    "user": {
+      "email": "oliverbertil2@gmail.com",
+      "role": "pwl_user"
+    },
+    "files": [
+      "98mq3guwlrhp8b7x.png"
+    ]
+  },
+  {
     "title": "Testing",
     "id": "98mq3b7clrhnsiqt",
     "user": {

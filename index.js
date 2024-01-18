@@ -40,6 +40,7 @@ app.set("view engine", "pug");
 //Global MWs
 //Public folder for static resources
 app.use(express.static("public"));
+//MAKE SURE THAT ./uploads/ EXIST BEFORE UPLOADING IMAGES OTHERWHISE THEY WONT SHOW.
 app.use(express.static("uploads"));
 
 //processing cookies for all routes
@@ -64,7 +65,7 @@ app.get("/create", logware, auth, (req,res)=>{
 });
 
 app.get("/guitars", guitars.index);
-app.post("/guitars", auth, /* fileMw.fileSize ,*/ guitars.create)
+app.post("/guitars", auth, fileMw.fileCount(), fileMw.fileSize(20000000), fileMw.fileType(["jpg", "jpeg", "png", "gif", "heif"]),guitars.create)
 app.get("/guitars/:id",logware,  guitars.show);
 app.delete("/guitars/:id", auth, isMine, guitars.destroy);
 app.put("/guitars/:id", guitars.update);
