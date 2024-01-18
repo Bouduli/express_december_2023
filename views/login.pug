@@ -1,0 +1,8 @@
+extends template.pug 
+
+block content 
+    .formContainer 
+        form(action="login", method="post")
+            input(type="email", name="email", placeholder="Email")
+            input(type="submit", value="Login")
+            input(type="hidden", name="client", value="true")

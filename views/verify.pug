@@ -1,0 +1,8 @@
+extends template.pug 
+
+block content 
+    .formContainer
+        form(action="verify", method="post")
+            input(type="password", name="code", placeholder="One Time Password")
+            input(type="submit", value="Verify")
+            input(type="hidden", name="client", value="true")
