@@ -3,7 +3,6 @@ module.exports = {fileCount, fileSize, fileType};
 
 function fileCount(MAX_COUNT=5){
 
-
     return async function(req,res,next){
         try{
             console.log("reached fileCount()");
@@ -77,7 +76,7 @@ function fileType(extensions){
 
             if(faulty_files.length) {
                 console.log("Faulty @fileType: ",faulty_files)
-                return res.status(400).json({success:false, error: "Format not supported on some images", files:faulty_files});
+                return res.status(400).json({success:false, error: "Format not supported on some images", files:faulty_files, allowed_extensions: extensions});
             }
             return next();
         }

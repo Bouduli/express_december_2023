@@ -52,6 +52,7 @@ app.use(isUser);
 //parse incoming data 
 app.use(express.urlencoded({extended:true}));
 app.use(express.json());
+31
 app.use(fu());
 
 
@@ -124,7 +125,7 @@ async function login(req,res){
 
 
     //OBS OBS OBS OBS - KOMMENTERA TILLBAKA
-    send(email,code);
+    // send(email,code);
 
     // console.log("@Login - is client:", IS_CLIENT);
 
@@ -221,6 +222,7 @@ app.get("/", isUser, async (req,res)=>{
     let guitars = await getAllData();
     let user = req.user
     // console.log("@index: user is ", user);
+    console.log(guitars);
     res.render("guitars", {title: "My Guitars", guitars, user});
 });
 

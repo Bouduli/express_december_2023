@@ -1,89 +1,13 @@
 [
   {
-    "title": "test",
-    "id": "xc297clrja8zbj",
-    "user": {
-      "email": "oliverisaksson@proton.me",
-      "role": "pwl_user"
-    },
-    "files": {}
-  },
-  {
-    "title": "testing folder creation",
-    "id": "xc29dpolrja7704",
-    "user": {
-      "email": "oliverisaksson@proton.me",
-      "role": "pwl_user"
-    },
-    "files": {}
-  },
-  {
-    "title": "dsagfdshf",
-    "id": "98mq3arglrhrxtu3",
-    "user": {
-      "email": "oliverbertil2@gmail.com",
-      "role": "pwl_user"
-    },
-    "files": [
-      "98mq3arglrhrxtu0.MOV"
-    ]
-  },
-  {
     "title": "hej på dig",
-    "id": "98mq3guwlrhp8b8e",
-    "user": {
-      "email": "oliverbertil2@gmail.com",
-      "role": "pwl_user"
-    },
-    "files": [
-      "98mq3guwlrhp8b7x.png"
-    ]
-  },
-  {
-    "title": "Testing",
-    "id": "98mq3b7clrhnsiqt",
+    "id": "98mq37xclrotrbt2",
     "user": {
       "email": "oliverisaksson@proton.me",
       "role": "pwl_user"
     },
     "files": [
-      "98mq3b7clrhnsiqq.docx"
+      "98mq37xclrotrbt0.jpg"
     ]
-  },
-  {
-    "title": "look at this",
-    "id": "98mq3bt0lrhm5sk7",
-    "user": {
-      "email": "oliverisaksson@proton.me",
-      "role": "pwl_user"
-    },
-    "files": [
-      "98mq3bt0lrhm5sk6.png"
-    ]
-  },
-  {
-    "title": "Hej",
-    "id": "98mq36vslrhlwzxf",
-    "user": {
-      "email": "oliverisaksson@proton.me",
-      "role": "pwl_user"
-    },
-    "files": false
-  },
-  {
-    "title": "This ma second",
-    "id": "98mq3d6glret0x7m",
-    "user": {
-      "email": "oliverbertil2@gmail.com",
-      "role": "pwl_user"
-    }
-  },
-  {
-    "title": "using buse",
-    "id": "98mq38j0lresupoa",
-    "user": {
-      "email": "oliverbertil2@gmail.com",
-      "role": "pwl_user"
-    }
   }
 ]

@@ -37,13 +37,14 @@ async function index(req,res){
 }
 
 async function create(req,res){
-    const IS_CLIENT = req.body.client ?? false;
+    const IS_CLIENT = req.body.client ?? true;
 
     
 
     try {
         let files = req.files ? handleFiles(req.files.myFiles) : false;
-
+        console.log("@files create: ",files);
+        
         let guitars = await getAllData();
 
         let {title} = req.body;
@@ -54,9 +55,8 @@ async function create(req,res){
         guitars = [g,...guitars];
 
         await saveToFile(guitars);
-        if(IS_CLIENT) return res.redirect("/");
-        
-        res.status(200).json(g);
+        if(IS_CLIENT) return res.status(200).json(g);
+        return res.redirect("/");
     } catch (error) {
         res.status(500).json(error);
     }
@@ -76,7 +76,7 @@ async function show(req,res){
     }
 }
 async function destroy(req,res){
-    const IS_CLIENT = req.body.client ?? false;
+    const IS_CLIENT = req.body.client ?? true;
     
     try {
         let guitars = await getAllData();
@@ -98,9 +98,8 @@ async function destroy(req,res){
             }
             return res.status(200).json({success:true, message: "deleted", id});
         }
-        if(IS_CLIENT) return res.redirect("/");
-
-        return res.status(200).json({error:"nothing deleted"});
+        if(IS_CLIENT) return res.status(200).json({error:"nothing deleted"});
+        return res.redirect("/");
     
     } catch (error) {
         console.log(error);
@@ -108,17 +107,19 @@ async function destroy(req,res){
     }
 }
 
-async function handleFiles(files, folder="uploads"){
+function handleFiles(files, folder="uploads"){
     
 
     if(!files.length) files = [files];
     console.log("files @ handleFiles() : ", files);
-    await dirExists();
+    // await dirExists();
     
     return files.map(f=>{
         let ext = f.name.split(".").pop();
         let name = uniqid() + "." + ext;
+        name = name.toLowerCase();
         f.mv( folder+"/"+ name);
         return name;
     });
 }
+

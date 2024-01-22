@@ -1,8 +1,8 @@
 console.log("Loaded from client.js");
 
 // Add listener to guitarContainer
-
-document.querySelector(".guitarContainer")
+if(document.querySelector(".guitarContainer")){
+    document.querySelector(".guitarContainer")
     .addEventListener("click", async (ev)=>{
         ev.preventDefault();
         console.log("link clicked");
@@ -19,7 +19,8 @@ document.querySelector(".guitarContainer")
 
             }
         }
-    })
+    });
+}
 
 async function deleteGuitar(href){
     console.log("href: ",href);
@@ -31,3 +32,24 @@ async function deleteGuitar(href){
     response = await response.json();
     if(response.id) document.getElementById(response.id).remove();
 }
+
+// document.querySelector("#createGuitar").addEventListener("submit", handleCreate);
+// async function handleCreate(ev){
+//     ev.preventDefault();
+
+
+//     let data  = new FormData(ev.target);
+//     console.log(ev.target.client);
+     
+//     let response = await fetch("/guitars", {
+//         method: "POST",
+//         credentials: "include",
+//         body: data,
+
+//     });
+
+//     response = await response.text();
+//     console.log(response);
+
+
+// }

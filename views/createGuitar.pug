@@ -2,7 +2,7 @@ extends template.pug
 
 block content 
     .formContainer
-        form(action="/guitars", method="post", enctype="multipart/form-data")
+        form(id="createGuitar" action="/guitars", method="post", enctype="multipart/form-data")
             input(type="text", name="title", placeholder="Title")
             input(type="file", name="myFiles", multiple)
             input(type="submit", value="Create Guitar")
